@@ -2,8 +2,7 @@
 #include <vector>
 #include <algorithm>
 
-#define ROW 9
-#define COL 9
+#define N 9
 
 bool isValidForRow(const std::vector<int>& sudokuGridRow,  const int candidate) {
     // If the candidate already exists whithin the row, return false. 
@@ -25,37 +24,18 @@ bool isValidForColumn(const std::vector<std::vector<int>>& sudokuGrid, const std
 }
 
 bool isValidForSmallSquare(const std::vector<std::vector<int>>& sudokuGrid, const std::pair<int, int> coordinates, const int candidate) {
-        int rowStart{0};
-        int rowEnd{2};
-        int columnStart{0};
-        int columnEnd{2};
 
-        // Check the row coordinate and compare it to the 9 smaller grids within the sudoku grid 
-        if (coordinates.first > 2 && coordinates.first < 5 ) {
-            rowStart = 3;
-            rowEnd = 5;
-        } else if (coordinates.first > 5) {
-            rowStart = 6;
-            rowEnd = 8;
+    int rowStart = coordinates.first - (coordinates.first % 3);
+    int columnStart = coordinates.second - (coordinates.second % 3);
+    
+    for (int i = rowStart; i < 3; i++) {
+        for (int j = columnStart; j < 3; j++) {
+            if (sudokuGrid[i][j] == candidate)
+                return false; 
         }
+    }
 
-        // Check the column coordinate and compare it to the 9 smaller grids within the sudoku grid
-        if (coordinates.second > 2 && coordinates.second < 5 ) {
-            columnStart = 3;
-            columnEnd = 5;
-        } else if (coordinates.second > 5) {
-            columnStart = 6;
-            columnEnd = 8;
-        }
-
-        for (int i = rowStart; i <= rowEnd; i++) {
-            for (int j = columnStart; j <= columnEnd; j++) {
-                if (sudokuGrid[i].at(j) == candidate)
-                    return false; 
-            }
-        }
-
-        return true;
+    return true;
 }
 
 bool isCandidateValid(const std::vector<std::vector<int>>& sudokuGrid, const std::pair<int, int>& coordinates, const int& candidate) {
@@ -81,8 +61,8 @@ void printSudoku(const std::vector<std::vector<int>>& sudokuGrid) {
 }
 
 bool findEmpty(const std::vector<std::vector<int>>& sudokuGrid, std::pair<int,int>& emptySquare) {
-    for (int i = 0; i < ROW; i++) {
-        for (int j = 0; j < COL; j++) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
             if (sudokuGrid[i][j] == 0) {
                 emptySquare = std::make_pair(i, j);
                 return true;
@@ -96,18 +76,25 @@ bool findEmpty(const std::vector<std::vector<int>>& sudokuGrid, std::pair<int,in
 bool solveSudoku(std::vector<std::vector<int>>& sudokuGrid) {
     // printSudoku(sudokuGrid);
     std::pair<int, int> emptySquare;
-
+    
     // Check if the grid has been solved, meaning there are no more empty squares in it.
-    if(findEmpty(sudokuGrid, emptySquare)) {
-        // Begin testing numbers for the emptySquare
-        for (int x = 1; x < 10; x++) {
-            if (isCandidateValid(sudokuGrid, emptySquare, x)) {
-                sudokuGrid[emptySquare.first][emptySquare.second] = x;
-                if (solveSudoku(sudokuGrid))
-                    return true;
-                sudokuGrid[emptySquare.first][emptySquare.second] = 0;
-            } 
-        }
+    if(!findEmpty(sudokuGrid, emptySquare))
+        return true;
+
+    // printSudoku(sudokuGrid);
+    // std::cout << emptySquare.first << ", " << emptySquare.second << "\n";
+    // Begin testing numbers for the emptySquare
+    
+    for (int x = 1; x <= N; x++) {
+        if (isCandidateValid(sudokuGrid, emptySquare, x)) {
+            sudokuGrid[emptySquare.first][emptySquare.second] = x;
+            if (solveSudoku(sudokuGrid)) {
+                // std::cout << emptySquare.first << ", " << emptySquare.second << "-> " << x << " OK\n";
+                return true;
+            }
+            // std::cout << emptySquare.first << ", " << emptySquare.second << "-> " << x << " FAIL\n";
+            sudokuGrid[emptySquare.first][emptySquare.second] = 0;
+        } 
     }
 
     return false;
@@ -119,7 +106,7 @@ int main() {
     std::cout << "Welcome to SudokuSolver!" << std::endl;
     std::cout << "=========================" << std::endl;
 
-    // The negative number 1 is used to indicate an empty square in the grid.
+    // The number 0 is used to indicate an empty square in the grid.
     std::vector<std::vector<int>> puzzle{
         {3, 0, 6, 5, 0, 8, 4, 0, 0},
         {5, 2, 0, 0, 0, 0, 0, 0, 0},
@@ -136,6 +123,7 @@ int main() {
     std::cout << "=================================" << std::endl;
     std::cout << std::boolalpha << solveSudoku(puzzle) << std::endl;
 
-
+    printSudoku(puzzle);
+    
     return 0;
 }
