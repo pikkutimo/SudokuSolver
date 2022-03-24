@@ -74,25 +74,19 @@ bool findEmpty(const std::vector<std::vector<int>>& sudokuGrid, std::pair<int,in
 }
 
 bool solveSudoku(std::vector<std::vector<int>>& sudokuGrid) {
-    // printSudoku(sudokuGrid);
     std::pair<int, int> emptySquare;
     
     // Check if the grid has been solved, meaning there are no more empty squares in it.
     if(!findEmpty(sudokuGrid, emptySquare))
         return true;
-
-    // printSudoku(sudokuGrid);
-    // std::cout << emptySquare.first << ", " << emptySquare.second << "\n";
-    // Begin testing numbers for the emptySquare
     
     for (int x = 1; x <= N; x++) {
         if (isCandidateValid(sudokuGrid, emptySquare, x)) {
             sudokuGrid[emptySquare.first][emptySquare.second] = x;
             if (solveSudoku(sudokuGrid)) {
-                // std::cout << emptySquare.first << ", " << emptySquare.second << "-> " << x << " OK\n";
                 return true;
             }
-            // std::cout << emptySquare.first << ", " << emptySquare.second << "-> " << x << " FAIL\n";
+
             sudokuGrid[emptySquare.first][emptySquare.second] = 0;
         } 
     }
@@ -124,6 +118,6 @@ int main() {
     std::cout << std::boolalpha << solveSudoku(puzzle) << std::endl;
 
     printSudoku(puzzle);
-    
+
     return 0;
 }
